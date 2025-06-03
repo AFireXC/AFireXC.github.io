@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tabla de Frecuencias Vintage</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Playfair+Display&display=swap');
+
+  body {
+    margin: 0;
+    background: #f0e6d2 url('https://www.transparenttextures.com/patterns/vintage-wallpaper.png') repeat;
+    font-family: 'Playfair Display', serif;
+    color: #4a3723;
+  }
+  h1 {
+    font-family: 'Alfa Slab One', cursive;
+    text-align: center;
+    margin-top: 30px;
+    color: #6b4c3b;
+    text-shadow: 1px 1px 0 #cbb994;
+  }
+  .container {
+    max-width: 700px;
+    background: rgba(231, 217, 179, 0.85);
+    margin: 40px auto;
+    padding: 20px 30px 40px 30px;
+    border-radius: 15px;
+    box-shadow: 5px 8px 15px rgba(99, 69, 45, 0.7);
+  }
+  label {
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  input[type="text"] {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 8px 10px;
+    border: 2px solid #b89a66;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-family: 'Playfair Display', serif;
+    background-color: #f7f0db;
+    color: #5a4427;
+    transition: border-color 0.3s ease;
+  }
+  input[type="text"]:focus {
+    border-color: #6b4c3b;
+    outline: none;
+  }
+  button {
+    margin-top: 15px;
+    background-color: #6b4c3b;
+    color: #f7f0db;
+    border: none;
+    padding: 12px 18px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 2px 3px 6px rgba(107,76,59,0.7);
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #5a3b28;
+  }
+  table {
+    margin-top: 30px;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(107,76,59,0.25);
+  }
+  th, td {
+    border: 1px solid #b89a66;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  th {
+    background-color: #cbb994;
+    color: #4a3723;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  tbody tr:nth-child(odd) {
+    background-color: #e6dcb3;
+  }
+  tbody tr:nth-child(even) {
+    background-color: #f7f0db;
+  }
+  .note {
+    margin-top: 20px;
+    font-style: italic;
+    text-align: center;
+    color: #7a6340;
+  }
+</style>
+</head>
+<body>
+  <h1>Tabla de Frecuencias Vintage</h1>
+  <div class="container">
+    <label for="numeros">Ingrese números separados por coma, espacio o guion:</label>
+    <input type="text" id="numeros" placeholder="Ejemplo: 5, 3, 8, 5, 2, 3, 9" />
+    <button id="generarTabla">Generar Tabla de Frecuencias</button>
+    <div id="resultado"></div>
+    <p class="note">Los números se ordenan automáticamente y se calcula la frecuencia absoluta, relativa y acumulada.</p>
+  </div>
+
+  <script>
+    function calcularFrecuencias(numeros) {
+      numeros.sort((a, b) => a - b);
+      const freqAbs = {};
+      numeros.forEach(num => {
+        freqAbs[num] = (freqAbs[num] || 0) + 1;
+      });
+
+      const total = numeros.length;
+      let freqAcum = 0;
+      const filas = [];
+
+      for (const num of Object.keys(freqAbs).sort((a,b) => a-b)) {
+        const abs = freqAbs[num];
+        const rel = abs / total;
+        freqAcum += abs;
+        filas.push({
+          valor: num,
+          frecuenciaAbsoluta: abs,
+          frecuenciaRelativa: rel,
+          frecuenciaAcumulada: freqAcum
+        });
+      }
+      return filas;
+    }
+
+    function crearTabla(filas) {
+      if (filas.length === 0) return '<p>No hay datos válidos para mostrar.</p>';
+
+      let html = '<table><thead><tr><th>Valor</th><th>Frecuencia Absoluta</th><th>Frecuencia Relativa</th><th>Frecuencia Acumulada</th></tr></thead><tbody>';
+      filas.forEach(fila => {
+        html += `<tr>
+          <td>${fila.valor}</td>
+          <td>${fila.frecuenciaAbsoluta}</td>
+          <td>${(fila.frecuenciaRelativa * 100).toFixed(2)}%</td>
+          <td>${fila.frecuenciaAcumulada}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    document.getElementById('generarTabla').addEventListener('click', () => {
+      const input = document.getElementById('numeros').value.trim();
+      if (!input) {
+        document.getElementById('resultado').innerHTML = '<p style="color:#b94a48;">Por favor ingrese algún número.</p>';
+        return;
+      }
+
+      // Separar por comas, espacios o guiones
+      let tokens = input.split(/[\s,;-]+/);
+      tokens = tokens.filter(t => t !== '');
+      const numeros = [];
+
+      for (const t of tokens) {
+        const n = Number(t);
+        if (!isNaN(n)) {
+          numeros.push(n);
+        }
+      }
+
+      if (numeros.length === 0) {
+        document.getElementById('resultado').innerHTML = '<p style="color:#b94a48;">No se encontraron números válidos.</p>';
+        return;
+      }
+
+      const filas = calcularFrecuencias(numeros);
+      const tablaHTML = crearTabla(filas);
+      document.getElementById('resultado').innerHTML = tablaHTML;
+    });
+  </script>
+</body>
+</html>
+
